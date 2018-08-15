@@ -18,8 +18,6 @@
 using namespace std;
 
 /**
-	TODO - implement this function 
-    
     Initializes a grid of beliefs to a uniform distribution. 
 
     @param grid - a two dimensional grid map (vector of vectors 
@@ -39,16 +37,17 @@ using namespace std;
            0.25 0.25
 */
 vector< vector <float> > initialize_beliefs(vector< vector <char> > grid) {
-	vector< vector <float> > newGrid;
-
-	// your code here
+	const std::vector<float>::size_type rows = grid.size();
+	const std::vector<float>::size_type cols = grid.front().size();
+	const unsigned int gridSize = rows * cols;
+	const float prob = 1.0/gridSize;
+	
+	vector< vector <float> > newGrid(rows, vector<float>(cols, prob));
 	
 	return newGrid;
 }
 
 /**
-	TODO - implement this function 
-    
     Implements robot sensing by updating beliefs based on the 
     color of a sensor measurement 
 
@@ -90,16 +89,22 @@ vector< vector <float> > sense(char color,
 	float p_miss) 
 {
 	vector< vector <float> > newGrid;
-
-	// your code here
+	vector<float>::size_type rows = beliefs.size();
+	vector<float>::size_type cols = beliefs.front().size();
+	vector<float> probs;
+	for(unsigned int i = 0; i < rows; ++i) {
+		for(unsigned int j = 0; j < cols; ++j) {
+			bool hit = color == grid[i][j];
+			probs.push_back(beliefs[i][j] * (hit * p_hit + (1-hit) * p_miss));
+		}
+		newGrid.push_back(probs);
+	}
 
 	return normalize(newGrid);
 }
 
 
 /**
-	TODO - implement this function 
-    
     Implements robot motion by updating beliefs based on the 
     intended dx and dy of the robot. 
 
@@ -138,10 +143,17 @@ vector< vector <float> > move(int dy, int dx,
 	vector < vector <float> > beliefs,
 	float blurring) 
 {
+	vector<float>::size_type rows = beliefs.size();
+	vector<float>::size_type cols = beliefs.front().size();
+	vector < vector <float> > newGrid(rows, vector<float>(cols, 0.));
 
-	vector < vector <float> > newGrid;
-
-	// your code here
+	for(unsigned int i = 0; i < rows; ++i) {
+		for(unsigned int j = 0; j < cols; ++j) {
+			int newI = (i + dy) % cols;
+			int newJ = (j + dx) % rows;
+			newGrid[newJ][newI] = beliefs[i][j];
+		}
+	}
 
 	return blur(newGrid, blurring);
 }

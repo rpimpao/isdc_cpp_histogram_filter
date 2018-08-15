@@ -20,8 +20,6 @@
 using namespace std;
 
 /**
-	TODO - implement this function
-
     Normalizes a grid of numbers. 
 
     @param grid - a two dimensional grid (vector of vectors of floats)
@@ -32,17 +30,28 @@ using namespace std;
     	   all probabilities is equal to one.
 */
 vector< vector<float> > normalize(vector< vector <float> > grid) {
-	
 	vector< vector<float> > newGrid;
+	const vector<float>::size_type rows = grid.size();
+	const vector<float>::size_type cols = grid.front().size();
+	float total = 0.;
+	for(unsigned int i = 0; i < rows; ++i) {
+		for(unsigned int j = 0; j < cols; ++j) {
+			total += grid[i][j];
+		}
+	}
 
-	// todo - your code here
-
+	vector<float> column;
+	for(unsigned int i = 0; i < rows; ++i) {
+		column.clear();
+		for(unsigned int j = 0; j < cols; ++j) {
+			column.push_back(grid[i][j]/total);
+		}
+		newGrid.push_back(column);
+	}
 	return newGrid;
 }
 
 /**
-	TODO - implement this function.
-
     Blurs (and normalizes) a grid of probabilities by spreading 
     probability from each cell over a 3x3 "window" of cells. This 
     function assumes a cyclic world where probability "spills 
@@ -74,10 +83,33 @@ vector< vector<float> > normalize(vector< vector <float> > grid) {
     	   has been blurred.
 */
 vector < vector <float> > blur(vector < vector < float> > grid, float blurring) {
+	vector<float>::size_type rows = grid.size();
+	vector<float>::size_type cols = grid.front().size();
+	vector < vector <float> > newGrid(rows, vector<float>(cols, 0.));
 
-	vector < vector <float> > newGrid;
-	
-	// your code here
+	const float centerProb = 1 - blurring;
+	const float cornerProb = blurring / 12.0;
+    const float adjacentProb = blurring / 6.0;
+
+	const vector<vector<float> > window = {
+		{cornerProb, adjacentProb, cornerProb},
+		{adjacentProb, centerProb, adjacentProb},
+		{cornerProb, adjacentProb, cornerProb}
+	};
+
+	for(unsigned int i = 0; i < rows; ++i) {
+		for(unsigned int j = 0; j < cols; ++j) {
+			float prob = grid[i][j];
+			for(int dx = -1; dx < window.size() - 1; ++dx) {
+				for(int dy = -1; dy < window.front().size() - 1; ++dy) {
+					float blurr = window[dx+1][dy+1];
+					int new_i = (i + dy) % rows;
+                    int new_j = (j + dx) % cols;
+                    newGrid[new_i][new_j] += blurr * prob;
+				}
+			}
+		}
+	}
 
 	return normalize(newGrid);
 }
